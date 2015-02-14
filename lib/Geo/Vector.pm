@@ -1426,42 +1426,46 @@ sub world {
     } elsif (@_ > 1) {
 	%fids = map {$_ => 1} @_;
     }
-    my $extent;
+    my @extent;
     if (%fids) {
 	for my $fid (keys %fids) {
             my $f = $self->feature($fid);
             next unless $f;
 	    my $e = $f->Geometry->GetEnvelope();
-	    unless ($extent) {
-		@$extent = @$e;
+	    unless (@extent) {
+		@extent = @$e;
 	    } else {
-		$extent->[0] = MIN( $extent->[0], $e->[0] );
-		$extent->[2] = MIN( $extent->[2], $e->[2] );
-		$extent->[1] = MAX( $extent->[1], $e->[1] );
-		$extent->[3] = MAX( $extent->[3], $e->[3] );
+		$extent[0] = MIN( $extent[0], $e->[0] );
+		$extent[2] = MIN( $extent[2], $e->[2] );
+		$extent[1] = MAX( $extent[1], $e->[1] );
+		$extent[3] = MAX( $extent[3], $e->[3] );
 	    }
 	}
     } elsif ($self->{features}) {
 	for my $feature(values %{$self->{features}}) {
 	    my $e = $feature->Geometry->GetEnvelope();
-	    unless ($extent) {
-		@$extent = @$e;
+	    unless (@extent) {
+		@extent = @$e;
 	    } else {
-		$extent->[0] = MIN( $extent->[0], $e->[0] );
-		$extent->[2] = MIN( $extent->[2], $e->[2] );
-		$extent->[1] = MAX( $extent->[1], $e->[1] );
-		$extent->[3] = MAX( $extent->[3], $e->[3] );
+		$extent[0] = MIN( $extent[0], $e->[0] );
+		$extent[2] = MIN( $extent[2], $e->[2] );
+		$extent[1] = MAX( $extent[1], $e->[1] );
+		$extent[3] = MAX( $extent[3], $e->[3] );
 	    }
 	}
     } elsif ($self->{OGR}->{Layer}->GetFeatureCount() > 0) {
-	eval { $extent = $self->{OGR}->{Layer}->GetExtent(); };
+        my $e;
+	eval { $e = $self->{OGR}->{Layer}->GetExtent(); };
 	croak "GetExtent failed: $@" if $@;
+        @extent = @$e;
     } else {
         return;
     }
-    $extent->[1] = $extent->[0] + 1 if $extent->[1] <= $extent->[0];
-    $extent->[3] = $extent->[2] + 1 if $extent->[3] <= $extent->[2];
-    return ( $extent->[0], $extent->[2], $extent->[1], $extent->[3] );
+    $extent[0] = 0 unless $extent[0];
+    $extent[2] = 0 unless $extent[2];
+    $extent[1] = $extent[0] + 1 if !defined $extent[1] or $extent[1] <= $extent[0];
+    $extent[3] = $extent[2] + 1 if !defined $extent[3] or $extent[3] <= $extent[2];
+    return @extent;
 }
 
 ## @method Geo::Raster rasterize(%params)

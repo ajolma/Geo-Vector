@@ -90,24 +90,6 @@ xs_rasterize(l, gd, render_override, fid_to_rasterize, value_field)
 		if (ral_has_msg())
 			croak("%s",ral_get_msg());
 
-ral_pixbuf *
-gtk2_ex_geo_pixbuf_create(int width, int height, double minX, double maxY, double pixel_size, int bgc1, int bgc2, int bgc3)
-	CODE:
-		GDALColorEntry background = {bgc1, bgc2, bgc3, 255};
-		ral_pixbuf *pb = ral_pixbuf_create(width, height, minX, maxY, pixel_size, background);
-		RETVAL = pb;
-  OUTPUT:
-    RETVAL
-	POSTCALL:
-		if (ral_has_msg())
-			croak("%s",ral_get_msg());
-
-void 
-gtk2_ex_geo_pixbuf_destroy(pb)
-	ral_pixbuf *pb
-	CODE:
-	ral_pixbuf_destroy(&pb);
-
 void
 ral_pixbuf_save(pb, filename, type, option_keys, option_values)
 	ral_pixbuf *pb
@@ -238,24 +220,3 @@ ral_visual_feature_table_render(layer, pb)
 	POSTCALL:
 	if (ral_has_msg())
 		croak("%s",ral_get_msg());
-
-GdkPixbuf_noinc *
-gtk2_ex_geo_pixbuf_get_pixbuf(ral_pixbuf *pb)
-	CODE:
-		if (ral_cairo_to_pixbuf(pb))
-			RETVAL = ral_gdk_pixbuf(pb);
-	OUTPUT:
-		RETVAL
-	POSTCALL:
-		if (ral_has_msg())
-			croak("%s",ral_get_msg());
-
-cairo_surface_t_noinc *
-gtk2_ex_geo_pixbuf_get_cairo_surface(pb)
-	ral_pixbuf *pb
-    CODE:
-	RETVAL = cairo_image_surface_create_for_data
-		(pb->image, CAIRO_FORMAT_ARGB32, pb->N, pb->M, pb->image_rowstride);
-    OUTPUT:
-	RETVAL
-
